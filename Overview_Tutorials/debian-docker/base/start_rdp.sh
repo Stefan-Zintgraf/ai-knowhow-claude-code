@@ -6,6 +6,13 @@
 #
 # Stefan Zintgraf, stefan@zintgraf.de
 
+# Configure VPN routing through host (if VPN_NETWORK is set)
+# This runs as root before switching to user, allowing route configuration
+if [ -n "$VPN_NETWORK" ]; then
+    echo "Configuring VPN routing..."
+    /usr/bin/configure-vpn-routing.sh || echo "VPN routing configuration completed (may be skipped if VPN not connected)"
+fi
+
 # Clean up any stale socket files and PID files from previous runs
 # This is important when the container is restarted
 rm -f /var/run/xrdp/xrdp-sesman.pid

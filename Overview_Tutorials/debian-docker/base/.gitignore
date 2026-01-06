@@ -1,4 +1,6 @@
 ﻿# Gitignore for Docker directory
+# Ignore .env file (contains sensitive credentials)
 .env
-*.env
-!*.env.example
+
+# Explicitly allow .env.example (template file should be tracked)
+!.env.example

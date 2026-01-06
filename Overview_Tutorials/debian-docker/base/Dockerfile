@@ -145,6 +145,9 @@ RUN sed -i 's/\r$//' /usr/bin/start_rdp.sh && chmod +x /usr/bin/start_rdp.sh
 COPY start_vnc.sh /usr/bin/start_vnc.sh
 RUN sed -i 's/\r$//' /usr/bin/start_vnc.sh && chmod +x /usr/bin/start_vnc.sh
 
+COPY configure-vpn-routing.sh /usr/bin/configure-vpn-routing.sh
+RUN sed -i 's/\r$//' /usr/bin/configure-vpn-routing.sh && chmod +x /usr/bin/configure-vpn-routing.sh
+
 USER ${DOCKER_USERNAME}
 WORKDIR /home/${DOCKER_USERNAME}
 

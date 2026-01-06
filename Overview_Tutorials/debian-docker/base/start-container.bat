@@ -1,12 +1,23 @@
 @echo off
 setlocal enabledelayedexpansion
 
+REM Change to the script's directory
+cd /d "%~dp0"
+
 REM Set RDP port mapping (host port -> container port 3389)
 set RDP_PORT=11389
 REM Set VNC port mapping (host port -> container port 5901)
 set VNC_PORT=15901
 REM Set SSH port mapping (host port -> container port 22)
 set SSH_PORT=2222
+
+REM Read VPN_NETWORK from .env file (if it exists)
+set VPN_NETWORK=
+if exist ".env" (
+    for /f "usebackq eol=# tokens=1,2 delims==" %%a in (".env") do (
+        if /i "%%a"=="VPN_NETWORK" set "VPN_NETWORK=%%b"
+    )
+)
 
 REM VNC checking/starting is currently disabled
 REM set USE_VNC=1
@@ -17,7 +28,15 @@ if not defined CONTAINER_NAME (
     echo.
     echo Container 'debian-dev-container' does not exist. Creating it...
     echo.
-    docker run -d -p %RDP_PORT%:3389 -p %VNC_PORT%:5901 -p %SSH_PORT%:22 --user root --name debian-dev-container debian-dev:latest
+    REM Build docker run command with VPN support if configured
+    REM Add NET_ADMIN capability to allow VPN routing configuration
+    set DOCKER_RUN_CMD=docker run -d -p %RDP_PORT%:3389 -p %VNC_PORT%:5901 -p %SSH_PORT%:22 --user root --cap-add=NET_ADMIN --name debian-dev-container --add-host=host.docker.internal:host-gateway
+    if not "!VPN_NETWORK!"=="" (
+        set DOCKER_RUN_CMD=!DOCKER_RUN_CMD! -e VPN_NETWORK=!VPN_NETWORK!
+        echo VPN routing enabled for network: !VPN_NETWORK!
+    )
+    set DOCKER_RUN_CMD=!DOCKER_RUN_CMD! debian-dev:latest
+    !DOCKER_RUN_CMD!
     REM Verify container was created (docker run might return non-zero even on success)
     timeout /t 1 /nobreak >nul
     set CONTAINER_NAME=

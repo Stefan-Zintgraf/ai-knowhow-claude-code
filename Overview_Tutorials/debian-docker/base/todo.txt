@@ -1,4 +1,4 @@
 - [x] RDP ans Laufen kriegen
-- [ ] Python-Pakete etc. dazu
-- [ ] VNC ans Laufen kriegen
+- [x] Python-Pakete etc. dazu
+- [ ] VPN innerhalb Docker-Image (siehe VPN_ROUTING_STATUS.md)
 - [ ] Dockerfile etc. fixen, so dass alles automatisch geht (neues Image, altes sichern)

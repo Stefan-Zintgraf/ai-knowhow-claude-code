@@ -97,6 +97,12 @@ if not exist ".env.example" (
         echo # If not set, DOCKER_PASSWORD will be used as the VNC password
         echo # VNC_PASSWORD=dev
         echo.
+        echo # VPN_NETWORK: VPN network CIDR for container access ^(optional^)
+        echo # Set this to your OpenVPN network subnet to enable VPN routing in containers
+        echo # Example: VPN_NETWORK=10.8.0.0/24
+        echo # Leave empty or unset to disable VPN routing
+        echo # VPN_NETWORK=
+        echo.
     ) > .env.example
 )
 
