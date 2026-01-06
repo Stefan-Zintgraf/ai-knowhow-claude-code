@@ -109,9 +109,12 @@ RUN \
   && /bin/dbus-uuidgen > /etc/machine-id # XFCE Config
 
 # Add common aliases to user's bash configuration files
+# Also fix PATH to include /usr/sbin and /sbin for system tools like ifconfig
 RUN \
-  echo "alias ll='ls -l'" >> /home/${DOCKER_USERNAME}/.bashrc \
+  echo "export PATH=\"/usr/local/sbin:/usr/sbin:/sbin:\$PATH\"" >> /home/${DOCKER_USERNAME}/.bashrc \
+  && echo "alias ll='ls -l'" >> /home/${DOCKER_USERNAME}/.bashrc \
   && echo "shopt -s expand_aliases" > /home/${DOCKER_USERNAME}/.bash_profile \
+  && echo "export PATH=\"/usr/local/sbin:/usr/sbin:/sbin:\$PATH\"" >> /home/${DOCKER_USERNAME}/.bash_profile \
   && echo "alias ll='ls -l'" >> /home/${DOCKER_USERNAME}/.bash_profile \
   && echo "[ -f ~/.bashrc ] && . ~/.bashrc" >> /home/${DOCKER_USERNAME}/.bash_profile \
   && chown ${DOCKER_USERNAME}:${DOCKER_USERNAME} /home/${DOCKER_USERNAME}/.bashrc \
