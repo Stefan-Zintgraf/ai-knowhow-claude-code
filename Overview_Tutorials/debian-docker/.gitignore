@@ -1,0 +1,4 @@
+﻿# Gitignore for Docker directory
+.env
+*.env
+!*.env.example

@@ -1,0 +1,4 @@
+- [x] RDP ans Laufen kriegen
+- [ ] Python-Pakete etc. dazu
+- [ ] VNC ans Laufen kriegen
+- [ ] Dockerfile etc. fixen, so dass alles automatisch geht (neues Image, altes sichern)
