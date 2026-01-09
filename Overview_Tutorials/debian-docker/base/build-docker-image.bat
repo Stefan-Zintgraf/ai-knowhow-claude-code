@@ -4,6 +4,13 @@ setlocal enabledelayedexpansion
 REM Change to the script's directory
 cd /d "%~dp0"
 
+REM Docker image name configuration
+set DOCKER_IMAGE_NAME=debian-dev:latest
+
+REM Extract image name without tag for container name
+for /f "tokens=1 delims=:" %%i in ("%DOCKER_IMAGE_NAME%") do set DOCKER_IMAGE_BASE=%%i
+set DOCKER_CONTAINER_NAME=%DOCKER_IMAGE_BASE%-container
+
 REM Parse command-line arguments
 set FORCE_REBUILD=0
 set NO_CACHE=
@@ -137,7 +144,7 @@ if "!VNC_PASSWORD!"=="" (
 )
 
 REM Check if Docker image already exists
-docker images debian-dev:latest --format "{{.Repository}}:{{.Tag}}" 2>nul | findstr /C:"debian-dev:latest" >nul
+docker images !DOCKER_IMAGE_NAME! --format "{{.Repository}}:{{.Tag}}" 2>nul | findstr /C:"!DOCKER_IMAGE_NAME!" >nul
 if !errorlevel! equ 0 (
     if !FORCE_REBUILD! equ 1 (
         REM Force rebuild: automatically remove existing image
@@ -146,7 +153,7 @@ if !errorlevel! equ 0 (
         echo.
         
         REM Find and stop all containers using this image
-        for /f "tokens=*" %%c in ('docker ps -a --filter "ancestor=debian-dev:latest" --format "{{.ID}}" 2^>nul') do (
+        for /f "tokens=*" %%c in ('docker ps -a --filter "ancestor=!DOCKER_IMAGE_NAME!" --format "{{.ID}}" 2^>nul') do (
             echo Stopping container %%c...
             docker stop %%c >nul 2>&1
             echo Removing container %%c...
@@ -155,7 +162,7 @@ if !errorlevel! equ 0 (
         
         REM Force remove the image
         echo Removing image...
-        docker rmi -f debian-dev:latest
+        docker rmi -f !DOCKER_IMAGE_NAME!
         if !errorlevel! neq 0 (
             echo [ERROR] Failed to remove existing image.
             pause
@@ -166,7 +173,7 @@ if !errorlevel! equ 0 (
     ) else (
         REM Normal mode: prompt user
         echo.
-        echo [WARNING] Docker image 'debian-dev:latest' already exists!
+        echo [WARNING] Docker image '!DOCKER_IMAGE_NAME!' already exists!
         echo.
         echo What would you like to do?
         echo   1. Remove the existing image and build a new one
@@ -179,7 +186,7 @@ if !errorlevel! equ 0 (
             echo Removing existing image and associated containers...
             
             REM Find and stop all containers using this image
-            for /f "tokens=*" %%c in ('docker ps -a --filter "ancestor=debian-dev:latest" --format "{{.ID}}" 2^>nul') do (
+            for /f "tokens=*" %%c in ('docker ps -a --filter "ancestor=!DOCKER_IMAGE_NAME!" --format "{{.ID}}" 2^>nul') do (
                 echo Stopping container %%c...
                 docker stop %%c >nul 2>&1
                 echo Removing container %%c...
@@ -188,7 +195,7 @@ if !errorlevel! equ 0 (
             
             REM Force remove the image
             echo Removing image...
-            docker rmi -f debian-dev:latest
+            docker rmi -f !DOCKER_IMAGE_NAME!
             if !errorlevel! neq 0 (
                 echo [ERROR] Failed to remove existing image.
                 pause
@@ -234,27 +241,27 @@ REM Build command
 set BUILD_ARGS=--build-arg DOCKER_USERNAME=!DOCKER_USERNAME! --build-arg DOCKER_PASSWORD=!DOCKER_PASSWORD! --build-arg VNC_PASSWORD=!VNC_PASSWORD!
 
 if !FORCE_REBUILD! equ 1 (
-    docker build --no-cache !BUILD_ARGS! -t debian-dev:latest .
+    docker build --no-cache !BUILD_ARGS! -t !DOCKER_IMAGE_NAME! .
 ) else (
-    docker build !BUILD_ARGS! -t debian-dev:latest .
+    docker build !BUILD_ARGS! -t !DOCKER_IMAGE_NAME! .
 )
 
 REM Verify the image was created successfully (check if image exists, not just exit code)
 timeout /t 1 /nobreak >nul
-docker images debian-dev:latest --format "{{.Repository}}:{{.Tag}}" 2>nul | findstr /C:"debian-dev:latest" >nul
+docker images !DOCKER_IMAGE_NAME! --format "{{.Repository}}:{{.Tag}}" 2>nul | findstr /C:"!DOCKER_IMAGE_NAME!" >nul
 if errorlevel 1 (
     echo.
     echo [ERROR] Docker image build failed or image was not created!
     echo.
 ) else (
     echo.
-    echo [SUCCESS] Docker image 'debian-dev:latest' built successfully!
+    echo [SUCCESS] Docker image '!DOCKER_IMAGE_NAME!' built successfully!
     echo.
     echo To run the container with RDP access:
-    echo   docker run -d -p 13389:3389 --name debian-dev-container debian-dev:latest tail -f /dev/null
+    echo   docker run -d -p 13389:3389 --name !DOCKER_CONTAINER_NAME! !DOCKER_IMAGE_NAME! tail -f /dev/null
     echo.
     echo Then start the RDP service:
-    echo   docker exec debian-dev-container service xrdp start
+    echo   docker exec !DOCKER_CONTAINER_NAME! service xrdp start
     echo.
     echo Connect via Remote Desktop to: localhost:13389
     echo   Username: !DOCKER_USERNAME!
